@@ -1,0 +1,83 @@
+. What is Kubernetes?
+Kubernetes is an open-source container orchestration tool or system that is used to automate tasks such as the management, monitoring, scaling, and deployment of containerized applications. It is used to easily manage several containers (since it can handle grouping of containers), which provides for logical units that can be discovered and managed.
+
+What are the main components of Kubernetes architecture?
+There are two primary components: the master node and the worker node. Each of these components has individual components in them.
+
+ What does the node status contain?
+The main components of a node status are Address, Condition, Capacity, and Info.
+
+What process runs on Kubernetes Master Node? 
+The Kube-api server process runs on the master node and serves to scale the deployment of more instances.
+
+What is the job of the kube-scheduler?
+The kube-scheduler assigns nodes to newly created pods.
+
+What is a Namespace in Kubernetes?
+Namespaces are used for dividing cluster resources between multiple users. They are meant for environments where there are many users spread across projects or teams and provide a scope of resources.
+
+
+kube-apiserver   - The API server is a component of the Kubernetes control plane that exposes the Kubernetes API. The API server is the front end for the Kubernetes control plane.
+etcd   - Consistent and highly-available key value store used as Kubernetes' backing store for all cluster data.
+kube-scheduler  - Control plane component that watches for newly created Pods with no assigned node, and selects a node for them to run on.
+kube-controller-manager -Control Plane component that runs controller processes.
+Node Components  - Node components run on every node, maintaining running pods and providing the Kubernetes runtime environment.
+kubelet - An agent that runs on each node in the cluster. It makes sure that containers are running in a Pod.
+Container runtime - The container runtime is the software that is responsible for running containers.
+
+ What are the different services within Kubernetes?
+Different types of Kubernetes services include: 
+Cluster IP service  - The ClusterIP is the default Kubernetes service that provides a service inside a cluster (with no external access) that other apps inside your cluster can access. 
+
+Node Port service  - The NodePort service is the most fundamental way to get external traffic directly to your service. It opens a specific port on all Nodes and forwards any traffic sent to this port to the service.
+External Name Creation service and 
+Load Balancer service - The LoadBalancer service is used to expose services to the internet. A Network load balancer, for example, creates a single IP address that forwards all traffic to your service.  
+
+
+master :-
+kube-apiserver
+etcd 
+node-controller
+replica-controller
+
+
+Kind Version
+POD v1
+Service v1
+ReplicaSet apps/v1
+Deployment apps/v1
+
+api version, kind, metadata, specs
+
+
+
+kubectl create -f rc-defenation.yml
+kubectl get replicationcontroller
+kubectl get pods
+ 
+ to scale replica set
+ 1st way:- 
+ make changes in replcaset file to 6 then below command
+kubectl replace -f replicaset-defenation.yml
+
+2nd way 
+kubectl scale --replicas=6 replicaset-defenation.yml
+kubectl scale --replicas=6 replicaset myappreplica
+
+
+Deployment:-
+kubectl -f deplyment-definition.yml
+
+rollout
+kubectl rollout status deplyment/myapp-deplyment-definition
+kubectl rollout history
+to apply changes in rolling change in file and below commands
+kubectl apply -f deplpymwnt-defination.yml
+
+kubectl rollout undo deplyment/myapp-deplyment-definition
+
+
+nodeport,clusterip,loadbalancer
+
+ 
+ 

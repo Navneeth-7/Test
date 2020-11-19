@@ -1,0 +1,127 @@
+docker run – Runs a command in a new container.
+	docker run -it --name <conatiner-ane> ubuntu
+	docker run -d <imagename>  --> it will run docker in detach mode
+	docker run -v /opt/datadir:/var/lib/mysql mysql    -->    /opt/datadir is on localhost, /var/lib/mysql on container 
+	docker run -p 8081:8080 -v /root/my-jenkins-data:/var/jenkins_home -u root jenkins  --. if we run this from 2nd time we don't need to setup jenkins from beginning.
+	docker run -e APP_COLOUR=blue simplewebapp  --> to pass environmental variables
+	docker run -p 8081:8080 -v /root/my-jenkins-data:/var/jenkins_home -u root jenkins  --. if we run this from 2nd time we don't need to setup jenkins from beginning.
+docker history <imagename>    --> Show the history of an image
+docker attach <running container name>   --> to go into running docker contianer
+docker start – Starts one or more stopped containers
+docker stop – Stops one or more running containers
+docker build – Builds an image form a Docker file
+docker pull – Pulls an image or a repository from a registry
+docker push – Pushes an image or a repository to a registry
+docker export – Exports a container’s filesystem as a tar archive
+docker exec – Runs a command in a run-time container
+docker search – Searches the Docker Hub for images
+docker attach – Attaches to a running container
+docker commit – Creates a new image from a container’s changes
+	docker commit newcontienr updateimage   --> next you can run--> docker run -it --name container123 updateimage /bin/bash
+docker system df
+docker diff --> to see diff in base image & changes on it then
+	
+docker inspect command   --> Return low-level information on Docker objects
+docker logs <containerid>   -->  Fetch the logs of a container
+docker images  -->> to see all docker images
+docekr search jenkins --> to find images in docker hub
+docker ps -a  --> to see all continers 
+docker ps   --> to see all runing continers
+docker rm --> to remover container
+
+
+componets of docker :- docker daemon, docker client,docker host
+ways to create images:- take image from docker hub, create image from docker file, create image from existing docker contianer
+docker container hold the entire package that is needed to run the application
+
+-------Dockerfile components:-
+
+FROM ---> F or the base image
+RUN  --> to execute commands , it will create layer in image
+MAINTAINER    --> Auther/Owner/Description
+COPY    --> copy files from local system (docker vm) we need to provide sourcec,destination we can't dowload files from internet
+ADD    --->  similar to copy it provides a feature to dowload files from internet,also we extract file at docker image file
+EXPOSE  --> to expose ports such as port 8080
+WORKDIR   -->  to set working dir for a continer
+CMD    --> executes commands but during container creation
+ENTRYPOINT   --> Similar to CMD, but has higher prioity over CMD, first commands will be executed by entrypoint only
+ENV   --> Environment variables
+
+
+Volume:-
+container - container
+docker run -it --anme container2(new) --priviledged=true --volume-from contianer1 ubuntu /bin/bash
+
+host- container
+docker run -it --name hostcount -v /home/ec2-user:/newvloume --priviliedged=true ubuntu /bin/bash
+,
+
+docker volume ls
+docker volume create  --> will create volume under /var/lib/docker/volume
+docker volume rm 
+docker volume prune --> it will remove all unused docker volumees
+docker voume inspect
+
+docker stop $(docker ps -a -q)  -->stop all running container
+docker rm $(docekr ps -a -q)   --> to delete all stopped conaitners
+docker rmi -f $(docker images -q)
+
+dockerhub:-
+
+docker login
+docker tag image1 dockerid/newimage  --> new mage will be new name of image1
+docker push dockerid/newiamge
+docker pull dockerid/newimage
+docker run -it --anme mynewconatiner dockerid/newiamges /bin/bash
+
+for private registry:-
+docker run -d -p 5000:50000 --name registry registry:2
+docker image tag myimage localhost:5000/myimages
+docker push localhost:5000/my-image
+docker pull localhost:5000/myimages
+
+
+
+Networking:-
+port mapping
+docker run ubuntu --network=host
+	docker run -p 80:5000 kodlekould/imagename  --> 80 is hostport 5000 is container port
+docker run ubutun  --> default docker 0 interface
+	docker network create --driver brdige --subnet 182.18.0.0/16
+	docker network ls
+	
+docker run ubuntu --network=none
+
+
+cgroup:
+docker run --cpu=.5 ubyntu
+docker run --memory=100m ubuntu
+
+
+docker filesystem:- 
+
+/var/lib/docker/
+	/aufs    --> layers data will be soted under /aufs/diff
+	/conatiners
+	/iamges
+	/volumes
+	
+
+
+docker-compose.yml:-
+
+version:3
+services:
+  redis:
+	images: redis
+  db:
+     image: postgres:9.4	
+  vote:
+    iamges: voting-application
+	ports:
+	  - 50000:80
+	  
+	  
+	  
+	  
+docker swa

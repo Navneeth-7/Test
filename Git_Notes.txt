@@ -1,0 +1,181 @@
+
+man git <git_command>  --> to get in detail
+	ex:-	'man git status'
+			'man git-commit'
+
+git --version 
+
+
+INIT
+	git init <path_name>
+	git init --bare <path>
+
+CONFIG:-
+	git config --local user.name <username>  --> By default git will write to local level if no config option is passed
+	git config --local user.email <email>   By default git will write to local level if no config option is passed
+	git config --global user.name "name"
+	git config --global user.email "na@example.com"
+	git config --list
+	git config --global core.editor "/usr/bin/vim"
+	git config user.name "name"              --> local to that repo
+	git config user.email "na@example.com"   --> local to that repo
+	git config user.name  --> display user's name
+	git config user.email --> display user's email
+	git config --unset key_name  -->delete existing config
+
+STATUS
+	git status --> View the status of your staged and upstaged files
+	git status -s  --> view output in shortend format  ('A' - means added & '?' - means untracked & 'AM' means modified)
+	git status -v --> get more verbose output, inclluding what was changed in file
+
+ADD
+	git add --command to use to add fies to git project,adds them to index file so that they can be tracked in staging area
+
+RM:-
+	git rm <filename>--> removes a file from project 
+	git rm -f <filename> --> force remove
+	git rm -cached test.txt
+
+COMMIT:-
+	git commit  --> opens text editor to prepare for commit of files in the staging area 
+	git commit -m "commit message" --> bypasses the editor and performs a commit with the specified message
+	cat .git/COMMIT_EDITMSG  --> stores the commit message 
+	git commit -a -m "message"  -->skip staging area
+
+IGNORING CERTAIN FILE TYPES
+	echo "*.bkp" > .gitignore  -->ignore file local to git repo commonly used to exculde files based on patterns
+	git check-ignore *.bkp --> Used to debug git ignore to see what is and is not being excluded from git
+
+
+
+Using Tag -- like sticky note
+
+	git tag -a <tag_name> -m <message>  --> create and annotated tag
+		ex:- git tag -a v1 -m "First tag for project"
+	git tag --> view all tags for repo
+	git show <tag_name> --> give full detail like commits,diff,author
+		ex:- git show v1  
+	git tag <tag_name> -m <message>
+		ex:- git tag v1.01
+	git tag -d <tag_Name>
+		ex:- git tag v1.01
+	man git tag
+
+
+BRANCHES :-
+	git branch <branch_name> -->creates a new branch of the project
+		ex:-  git branch development
+	git checkout <switches to another branch>
+		ex:- git checkout development
+	git branch -m temp new_temp --> renaming branch to  new_temp
+	git push origin :temp new_temp --> updating on remote repo 
+	git branch -a --> it will list all branches including remote 
+	man git-branch
+	man git-checkout
+ 	
+
+
+Log Command :-
+	git log  --> view the git repo history
+	git log --graph  --> show a textual graph of project's cpmmit history
+	git log --stat  --> show statistics of the files with each commit
+	git log --shortstat 
+	git log --since="4 days ago"   --> history of 4 days
+	git log --oneline --decorate
+	git log -S "some word"  -any words that mentioned 
+	git log --name-only --oneline --graph --decorate
+	git log --name-only
+	git log --graph --decorate
+	git log --pretty=format: --> format the output of git log command to display specific fields ref man git log command 
+			ex :- git log --pretty=format:"%h - %an -%ar - %s"
+
+
+MERGING BRANCHES:-
+	git merge --> combines the latest commits from two branches into one branch
+	git branch -d <branch_name>
+	man git-merge
+
+REVERT :-
+	git revert <commit> - revert a commit in the project
+	man git-revert
+	git revert HEAD  --> revert to 1 step back commits
+	git revert HEAD~2 --> revert to 2 step back commit
+	
+DIFF:-
+	git diff commitid
+	git diff --summary d8c919b 922168f
+	man git-diff
+
+GRABAGE COLLECTION
+	git gc --> Git garbage collection command,cleans out old objects that can not be referenced by database anymore,and compresses contents within the .git directory to save disk space 
+	git gc --prune by default, cleans out obejects that are older than 2 weeks
+	man git-gc
+	
+
+CLONING:-
+	git clone <localrepo> <new repo>
+		ex :- git clone feature1 testfeature1
+	git clone <remoteurl>
+	man git-clone
+	
+https://github.com/Navneeth-7/Ansible-yaml.git						
+Tracking RemoteRepo
+	git remote -v  --> shows the remote servers that are being tracked for current repo, and their latest statistics
+		ex:- git remote add origin <RemoteRepoName>
+	git fetch	--> fetches new commit info down from remote server for the current repo, does not commit anything to local db  or Dowload objects abd referebces from another repository
+		ex:- git fetch origin master  --> From the local repository Fetch the information about the changes in the remote.
+	git remote show origin  --> shows what we are tracking from remote server and any updated branches
+	git push -u <remote> <localbranch>  --> pushes local chnages on remote 
+		ex:- git push -u origin master
+	git remote rename orgini repo1
+	git remote remove master(or) git remote rm master
+	git push -f origin master --> forcefully pushing to remote 
+	git push origin --delete old_branch --> to delete branch on remote repo
+	git branch -d new_branch  --> to delete on local repo
+	git pull --> Fetch from and merge with another repo
+	man git-push
+	man git-fetch
+	man git-remote
+	
+RESET:-
+	git reset - Reset current HEAD to the specified state 	
+	git reset [<mode>] [<commit>]
+		This form resets the current branch head to <commit> and possibly updates the index (resetting it to the tree of <commit>) and the
+           working tree depending on <mode>. If <mode> is omitted, defaults to "--mixed". The <mode> must be one of the following:
+
+           --soft
+               Does not touch the index file or the working tree at all (but resets the head to <commit>, just like all modes do). This leaves
+               all your changed files "Changes to be committed", as git status would put it.
+
+           --mixed
+               Resets the index but not the working tree (i.e., the changed files are preserved but not marked for commit) and reports what has
+               not been updated. This is the default action.
+
+               If -N is specified, removed paths are marked as intent-to-add (see git-add(1)).
+
+           --hard
+               Resets the index and working tree. Any changes to tracked files in the working tree since <commit> are discarded.
+
+	
+
+
+GITFLOW:- (You need to install pulgin 'apt-get install git-flow')
+	git flow init
+	git flow feature start branch113
+	git flow feature finish branch113
+	git flow release start release_branch
+	git flow release finish release_branch
+	git flow bugfix start logging_test
+	git flow bugfix finish logging_test
+
+	
+git reflog
+git cherry-pick < commit hash you identified in previous step >
+git rebase -i HEAD~3
+
+
+
+
+
+
+
