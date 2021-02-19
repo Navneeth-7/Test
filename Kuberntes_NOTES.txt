@@ -1,0 +1,328 @@
+kubeadm:- Is an utility to init(Initalize) the master and worker nodes as part of cluster setup.
+kubelet:- Is an agent that runs on every node in the cluster.
+CNI - Container network interface :-	
+	Is the set of rules how containers should communicate across the cluster.
+	There are network vendors who follow these CNI rules to develop a network solution can be plugged into the kube communcations 
+		weave/flannel/canal
+	network setup must be part of your cluster setup
+	
+k8 is going for containerd
+	because docker provide volume,network,container technology. For which k8 uses only container technology from docker. Volume, network etc,, will add additinal resource utilizstion on container.By using containerd it will minimize the resource utilization suppose if container with docker is using 500mb while using containerd it will use only 100mb.
+
+
+kubectl get all -o wide
+kubectl get pods --all-namespaces -o wide   --> gives all the pods which are running 
+kubectl get nodes -o wide --> to get nodes detailes where we see Internal Ip, OS-Image,Kernal-version,container-runtime.
+Kubelet runs on every node as a agent.
+
+Master 
+	-	API SERVER (Managing the componets of the cluster)
+	-	etcd (cluster store)(In case of diasaster recover we take backup of this)
+		Nodes,pods,config,secrets,accoutns,roles,binding,others info store in etcd
+	- 	scheduler   (Helps API server to schedule pod to particular Node ex:- kubectl run pod1 --image=tomcat then kubectl go to API server with request, API server don't know where to scdhule the pod on node, so it will assgin task to scheduler to assign pod to particualr node.scheduler just identify which is best node in a cluster and tell to API server that you can run pod on this particualr node. Then API server talk to that node kubelet,as kubelet don't know how to create container it will talk to container runtime docker and weave to initlaize the network,after creation API server will update in etcd)
+	-	scheduler (It will assign container to particular node based on resource utilization,Finds the best node and it will give to API server, Then API server will talk to kubelet of that node ,kubelet doesn't know how to create container then it will talk to container runtime docker,parlllely kubelet will talk to weave for n/w creation, After creation of this then Kubelet sent information to API server then API server update the DB(etcd))
+	-	controller Manager (Is responsible for maintaining desierd state like excpected num of containers in node, It will take data from etcd like desired state and current state then accordingly it will make changes to maintain desiered state of cluster)
+		controllers :- controls a group of pods in the cluster and provides various feature.
+		deplyoment is one type of controller where 
+		we can replicate 
+		scale up/down
+		desired state feature.
+		rolloing update
+		controller - Manager 
+			Node controller :- Handles nodes while onboarding and nodes unaviable.
+			Replication Controller :- Desired number of containers running in replication group.
+	-	All components of worker node
+Worker Node:-
+	Kubelet - Agent that runs on all nodes
+	container runtime - Can be docker which creates container
+	weave  - (N/w component) /(n/w bridge)
+	kube proxy  (Helps us to access application running inside container from external/Internal by exposing the necessary services)
+
+kubectl is client-CLI which intreact with API Server
+
+Pods :-
+	Pods is the most basic unit of depolyment in kubernetes hierarchy.
+	It hosts containers inside it and is responsible for ensuring they're healthy and functioing as expected.
+services -
+	which helps us to access applicaiton which running inside a pod through single point of entry.Types of pods
+	- CLUSTERIP - virtual loadbalancer that will forward the request into multiple backend pods
+		port :- virtual load balancer that will forward the request into multiple backend pods.
+		target port:- port number inside the container.
+		Nodeport :- It exposes a nodeport/hostport on every node in the cluster and also creates virtual loadbalancer(clusterIP) that will forward the request into multiple backend nodes.node port allowed port range is between 30000-32767
+	If traffic coming from external world then we have to maintain 2 LB's
+	- NODEPORTIP 
+	
+kubectl explain deploytment   ---> it will give details of deplyoment and what version we have to mention in kuberenetes yml file.
+kubectl run pod1 --image=nginx -l role=dev   --> will create a image nginx with role dev
+kubectl api-resources ---> will give what we have to mention in apiVersion,kind in kubernetes file.
+kubectl get pods --show-labels   --> It will give pods with labels 
+kubectl get pods -l role  --> It will give pods with label role
+kubectl get pods -l role=qa  --> It wil give pods with label role=qa
+
+kubectl run pod1 --image=tomcat -l role=db --dry-run=client -o yaml  --> iTt will give yaml file of above command
+kubectl run pod1 --image=tomcat -l role=db --dry-run=client -o json  --> iTt will give jason file of above command
+kubectl describe pod1   --> It will give describaion of pod
+kubectl logs pod1
+--------------------------------------------------------------------------------------------
+----------------------------------------------------
+               Replicaset
+----------------------------------------------------
+kubectl create -f replicaset-defination.yml  --> to create anything in yaml file.
+kubectl get replicaset   --> give total replicaset
+kubectl delete replicaset myapp-replicaset  --> delete replicaset and also deletes underlying pods.
+changing the replices in yaml file:-
+kubectl replace -f replicaset-definatioin.yml
+
+hard way of doing this but won't change in yml file, later we have to manually change for ethier of the way.
+kubectl scale --replicaset=6 replicaset-defination.yml  
+kubectl scale --replicas=6 -f replicaset myapp-replicaset
+---------------------------------------------------------------------------------------------
+kubectl config view # Show Merged kubeconfig settings.
+
+----------------------------------------------------------------------------------------------
+-----------------------------------------------
+                Namespaces
+------------------------------------------------
+In order to distinguish resources we use namespaces.
+
+mysql.connect("db-service.dev.svc.cluster.local")  --> In order to access pods in othe namespace.
+	db-service    - service name
+	dev           - Namespace
+	svc           - service
+	cluster.local - domain
+kubectl get pods --namespace=dev  --> to get pods in dev namespace
+kubectl config set-context $(kubectl config current-context) --namespace=dev    --> to change default namespace to dev
+kubectl get pods --all-namespaces   # to get all pods in all namespaces
+
+
+----------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------
+---------------------------------------------------
+                Services
+---------------------------------------------------
+It helps us to communicate or connect  b/w applications or users from outside world.
+	ex:- Suppose we have group of pods for forentend,group pods of db and group of pods connected to external world services helps us to connect b/w this group of pods.
+
+Types of Load balancers :-
+	- NodePort:-  where service make request to access internal.Here port is mandatory ,If we don't mention nodeport it will take random port b/w 30000-32767 port.If we don't mention targetport it will assume same port as PORT(service port number)
+		port 		:- Port on service.
+		targetport	:- port number inside the container.
+		Nodeport 	:- It is exposed to host/node port.
+	- ClusterIP:-virtual loadbalancer that will forward the request into multiple backend pods
+		port 		:- virtual load balancer that will forward the request into multiple backend pods.
+		target port	:- port number inside the container.
+		Nodeport 	:- It exposes a nodeport/hostport on every node in the cluster and also creates virtual loadbalancer(clusterIP) that will forward the request into multiple backend nodes.node port allowed port range is between 30000-32767
+	- Loadbalancer:- It provides loadbalancer for cloud providers. It colud be distribute load to forntend tier.
+
+kubectl expose deplyoment simple-webapp-deployment --name=webapp-service --target-port=8080 --type=NodePort --port=8080 --dry-run=client -o yaml >svc.yaml   # to create service
+
+
+-----------------------------------------------------------------------------------------------
+-------------------------------------------------
+             Imperative and Declarative
+-------------------------------------------------
+Imperative :- what to do and how to do approach.
+	not suitable to use in large organization as we don't know how the object is created it is limited to user session only.
+	ex:-
+		kubectl create -f nginx.yml # creating object suppose we need to update this file 
+			- kubectl replace -f nginx.yaml #make changes in local file so that it will keep track.
+			- kubectl edit deployment nginx  # if we use this command to make changes in live environemnt it won't reflect in local file. Thus creating discripancies.
+	kubectl expose pod redis --port=6379 --name redis-service   # Create a service redis-service to expose the redis application within the cluster on port 6379.
+	kubectl create deploy webapp --image=kodekloud/webapp-color --replicas=3  #Create a deployment named webapp using the image kodekloud/webapp-color with 3 replicas
+	kubectl run httpd --image=httpd:alpine --port=80 --expose  # Create a pod called httpd using the image httpd:alpine in the default namespace. Next, create a service of type ClusterIP by the same name (httpd). The target port for the service should be 80.
+	
+Declarative:- what to do approch.
+	make changes on the local file which we need. Then below commands
+		kubectl apply -f nginx.yml # Both local and live file changes, If you want to update edit the yaml file and then same command.
+		
+		
+kubectl expose deplyoment simple-webapp-deployment --name=webapp-service --target-port=8080 --type=NodePort --port=8080 --dry-run=client -o yaml >svc.yaml		
+----------------------------------------------------------------------------------------------
+-------------------------------------------------
+				Manual Scheduling
+-------------------------------------------------
+What if we don't have scheduler or we don't want to rely on bulit in scheduler. In built in scheduler nodeName(poddefination yaml file) is present which kubernetes will place automatically.
+If we don't have scheduler and run without nodeName then pod status will be in pending state.
+We only define nodeName during creation time. what if we have to modify the nodeName kubernetes won't allow us to modify the nodeName. Other method is to create binding object and post the request.Binding object data have to be in jason format.
+ex:- curl --header "content-Type:application/json" --request POST --data '{"apiVersion":"v1", "kind": "Binding" ... }' http://$SERVER/api/v1/namespaces/default/pods/$PODNAME/binding/
+----------------------------------------------------------------------------------------------
+------------------------------------------------------------
+			Labels & Selectors
+------------------------------------------------------------
+Labels are properties attached to objects.
+Selectors helps us to filter based on properties.
+kubectl get pods --selector app=App1  # to get pods with label app=App1
+----------------------------------------------------------------------------------------------
+-----------------------------------------------------
+			Taints and Tolerations
+-----------------------------------------------------
+Taints are added to Nodes.
+	kubectl taint nodes node-name key=value:taint-effect
+		taint-effect can be NoSchedule,preferNoSchedule,NoExecute.
+		ex:- kubectl taint nodes node1 app=blue:NoSchedule
+Tolerations are added to pods.
+		under spec section of pods in yaml file add toleration section and move same values of taint. All the values must be encoded in double qutoes.
+			tolerations:
+			 - key: "app"   		#take value from above taint or taint specific node
+			   operator: "Equal"	#take value from above taint or taint specific node
+			   vlaue: "blue"		#take value from above taint or taint specific node
+			   effect: "NoSchedule"	#take value from above taint or taint specific node
+taints and toleration doesn't tell the pods to go to particualr node.Instead, it tells the node to only accept pods with certain tolerations.When kuberbetes setup it by default master is tainted,to look taint below command.
+	kubectl describe node kubemaster| grep Taint
+kubectl taint nodes node01 spray=mortein:NoSchedule
+    Remove the taint on controlplane, which currently has the taint effect of NoSchedule
+		kubectl taint nodes controlplane node-role.kubernetes.io/master:NoSchedule-
+ containers:
+  - image: nginx
+    name: bee
+  tolerations:
+  - key: spray
+    value: mortein
+    effect: NoSchedule
+    operator: Equal
+-----------------------------------------------------------------------------------------------
+------------------------------------------------------
+                       Nodeselector
+------------------------------------------------------
+In default setup any pods can go to any nodes. We can set a limitation on the pods so that they only run on particular nodes. We can do this in 2 ways 1st way is below:
+	- adding new property called nodeSelector to spec section and specify the label of the node.adding label to node using below cmd.
+		kubectl label nodes <node-name> <label-key>=<label-value> # adding label to node
+			ex:- kubectl label nodes node-1 size=large
+	Node Affinity :- the main purpose of this is to ensure that pods are hosted on particular nodes.4 types :-
+	2 existing 
+	requiredDuringSchedulingIgnoredDuringExecution
+	preferredDuringSchedulingIgnoredDuringExecution:
+	2 are in planned phase:-
+	requiredDuringSchedulingRequiredDuringExecution
+	preferredDuringSchedulingRequiredDuringExecution
+
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: disktype
+            operator: In
+            values:
+            - ssd          
+
+-------------------------------------------------------------------------------------kubectl get nodes node01 --show-labels  # to show labels of node
+kubectl descibe node node01  # it will also show the labels of node and other details
+------------------------------------------------------------------------------------------------------------------------------------------
+				Resource Limit
+-----------------------------------------------------
+Here we set resources to pods.(CPU,Mem,Disk)If nodes doesn't have resources then it will go to pending state.
+Under container section:-
+	containers:
+	  resources:
+	    requests:
+		  memory: "1Gi"
+		  cpu: 2
+		limits:            
+		  memory: "2Gi"
+		  cpu: 2
+When pod goes above resources it will throttle
+-------------------------------------------------------------------------------------
+--------------------------------------------------------
+			Daemon sets
+--------------------------------------------------------
+Daemon sets are like replica-sets which runs 1 in node.when new node is added then new pod of deamon is automatically added.Daemon set ensure each node have 1 pod evertime in a cluster.
+Daemon sets use cases is used in Monitoring solution and logs viewer.
+
+kubectl get daemonsets --all-namespaces # To get all daemonsets in all namespaces
+
+make changes according by seeing the documentation replacing deplyoment with DaemonSet and removing uncessary lines.
+kubectl create deployment elasticsearch --namespace=kube-system --image=k8s.gcr.io/fluentd-elasticsearch:1.20 --dry-run=client -o yaml > dae1.yaml
+
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+              Static Pod
+----------------------------------------------------------
+What if you don't have any master node or any other node ? then kubelet alone have to handle the node.
+If you want to run the pod then place yaml file in (/etc/kubernters/manifests) then kubelet will regularly periodically this directory and create pods as you don't have api-server,schduler,etcd.If application crashes then kubelet attempts to restart it.
+
+Create a static pod named static-busybox that uses the busybox image and the command sleep 1000
+
+kubectl run --restart=Never --image=busybox static-busybox --dry-run=client -o yaml --command -- sleep 1000 > /etc/kubernetes/manifests/static-busybox.yaml
+
+-------------------------------------------------------------------------------------
+-------------------------------------------------------------
+                     Multiple schedulers
+-------------------------------------------------------------
+We can have multiple scheduler on a master , If we don't define scheduler then it will take default. First we have to install scheduler then edit in scheduler.service file.
+--scheduler-name=mycustome-scheduler
+Kubeadm stores schduler file in /etc/kubernetes/manifests/kube-scheduler.yaml
+If we want specific pod to take installed scheduler then we have to mention under spec section of yaml file like  'schedulerName: my-custom-scheduler'
+To check what events scheduler took use below command
+kubectl get events
+and to view logs
+kubectl logs my-custom-scheduler --name-space=kube-system
+
+
+--------------------------------------------------------------------------
+CLUSTER MAINTENANCE
+--------------------------------------------------------------------------
+               OS Upgrade
+---------------------------------------
+
+kubectl drain :-
+	You can use kubectl drain to safely evict all of your pods from a node before you perform maintenance on the node (e.g. kernel upgrade, hardware maintenance, etc.). Safe evictions allow the pod's containers to gracefully terminate and will respect the PodDisruptionBudgets you have specified
+	ex:-   	kubectl drain node01 --ignore-daemonsets
+			kubectl drain node02 --ignore-daemonsets
+			error: cannot delete Pods not managed by ReplicationController, ReplicaSet, Job, DaemonSet or StatefulSet (use --force to override): default/hr-app
+			kubectl drain node02 --ignore-daemonsets --force
+kubectl cordon NODE :-
+    Mark node as unschedulable
+kubectl uncordon NODE :-
+	Mark node as schedulable
+--------------------------
+Upgrading version
+--------------------------
+
+On master :-
+	Drain the master node of the workloads and mark it UnSchedulable	
+		kubeadm upgrade plan
+		kubectl drain controlplane 
+		kubectl drain controlplane  --ignore-daemonsets
+		kubectl get nodes
+		kubectl get po =o wide
+		kubectl get po -o wide
+		apt update
+		apt install kubeadm=1.19.0-00
+		kubeadm upgrade apply v1.19.0
+		kubectl get nodes
+		kubectl uncordon controlplane 
+	Next is the worker node. Drain the worker node of the workloads and mark it UnSchedulable
+		kubectl drain node01 --ignore-daemonsets
+	Upgrade the worker node to the exact version v1.19.0
+		 apt update 
+		 apt install kubeadm=1.19.0-00
+		 kubeadm upgrade node
+		 apt install kubelet=1.19.0-00
+		 kubectl uncordon node01
+---------------------------------
+BACKUP AND RESTORE
+---------------------------------
+	Check the ETCD Pod or Process
+		Look at the ETCD Logs using command kubectl logs etcd-controlplane -n kube-system or check the ETCD pod kubectl describe pod etcd-controlplane -n kube-system
+		or etcdctl version
+	The master nodes in our cluster are planned for a regular maintenance reboot tonight. While we do not anticipate anything to go wrong, we are required to take the necessary backups. Take a snapshot of the ETCD database using the built-in snapshot functionality.
+	Store the backup file at location /opt/snapshot-pre-boot.db
+		ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key snapshot save /opt/snapshot-pre-boot.db
+	https://github.com/mmumshad/kubernetes-the-hard-way/blob/master/practice-questions-answers/cluster-maintenance/backup-etcd/etcd-backup-and-restore.md
+	
+Certificate(Public key)
+	*crt *pem
+	server.crt
+	server.pem
+	client.crt
+	client.pem
+Private key
+	*key *-key.pem
+	server.key
+	server-key.pem
+	client.key
+	client-key.pem
+	
+
+
+
