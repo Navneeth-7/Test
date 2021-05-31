@@ -8,7 +8,7 @@ CNI - Container network interface :-
 	
 k8 is going for containerd
 	because docker provide volume,network,container technology. For which k8 uses only container technology from docker. Volume, network etc,, will add additinal resource utilizstion on container.By using containerd it will minimize the resource utilization suppose if container with docker is using 500mb while using containerd it will use only 100mb.
-
+sudo journalctl -u kubelet #To check logs of kubelet 
 
 kubectl get all -o wide
 kubectl get pods --all-namespaces -o wide   --> gives all the pods which are running 
