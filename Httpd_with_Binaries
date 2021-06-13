@@ -1,0 +1,52 @@
+#!/bin/sh
+sudo yum update -y
+sudo yum install wget -y
+sudo mkdir navneeth
+sudo cd navneeth
+sudo wget https://apachemirror.wuchna.com//httpd/httpd-2.4.48.tar.gz
+sudo tar -xvf httpd-2.4.48.tar.gz
+CAT INSTALL
+cd srclib/
+sudo yum groupinstall "Development Tools" -y #The gcc compiler is not in your $PATH. It means either you dont have gcc installed or it's not in your $PATH variable.To install gcc use this: (run as root)
+sudo yum install pcre-devel
+sudo yum install openssl-devel
+
+wget https://mirrors.estointernet.in/apache//apr/apr-1.7.0.tar.gz
+./configure --prefix=/usr/local/
+sudo make
+sudo make test
+sudo make install
+
+sudo yum install expat-devel # for error' xml/apr_xml.c:35:19: fatal error: expat.h: No such file or directory'
+wget https://mirrors.estointernet.in/apache//apr/apr-util-1.6.1.tar.gz
+tar -xvf apr-util-1.6.1.tar.gz
+sudo ./configure --prefix=/usr/local/ --with-apr=/usr/local/apr/bin/apr-1-config
+sudo make
+sudo make install
+
+
+#apache file present here /usr/local/apache/htdocs/index.html
+
+#go back to httpd dir
+sudo ./configure --prefix=/usr/local/apache --enable-so --enable-rewrite --enable-ssl --with-apr=/usr/local/apr --with-apr-util=/usr/local/apr-util --with-pcre=/usr/local/pcre --enable-modules=most --enable-mpms-shared=all --with-mpm=event --with-included-apr
+sudo make
+sudo make install
+sudo /usr/local/apache/bin/apachectl start
+
+#rename under dir ./srclib/
+mv apr-1.7.0 apr
+mv apr-util-1.6.1 apr-util
+
+
+
+
+configure: summary of build options:
+
+    Server Version: 2.4.48
+    Install prefix: /usr/local/apache
+    C compiler:     gcc -std=gnu99
+    CFLAGS:          -g -O2 -pthread
+    CPPFLAGS:        -DLINUX -D_REENTRANT -D_GNU_SOURCE
+    LDFLAGS:
+    LIBS:
+    C preprocessor: gcc -E
