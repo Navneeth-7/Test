@@ -1,0 +1,37 @@
+#kops installtaion on ec2
+#You need AWS cli you can directly go to AWS CLI console.
+
+wget https://github.com/kubernetes/kops/releases/download/v1.16.4/kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+sudo chmod +x /usr/local/bin/kops 
+kops version   
+aws s3api create-bucket --bucket navneeth4-justme-k8-kops-store --region us-east-1
+aws s3api put-bucket-versioning --bucket navneeth4-justme-k8-kops-store --region us-east-1 --versioning-configuration Status=Enabled
+export KOPS_STATE_STORE=s3://navneeth4-justme-k8-kops-store
+kops create secret sshpublickey admin -i /home/cloudshell-user/.ssh/id_rsa.pub --name justme.k8s.local --state $KOPS_STATE_STORE
+kops create cluster --name justme.k8s.local  --state=$KOPS_STATE_STORE --zones=us-east-1a --master-size t2.medium --node-size t2.micro --kubernetes-version 1.16.15
+kops update cluster justme.k8s.local
+kops update cluster justme.k8s.local --yes
+kops rolling-update cluster
+kops rolling-update cluster --cloudonly
+
+#helm installtaion 
+Helm installtion through binary
+wget https://get.helm.sh/helm-v2.16.11-linux-amd64.tar.gz
+tar -xvf helm-v2.16.11-linux-amd64.tar.gz
+cd linux-amd64/
+sudo mv helm /usr/local/bin/
+sudo chmod +x /usr/local/bin/helm
+helm init --stable-repo-url=https://charts.helm.sh/stable --client-only
+
+
+-- optional helm install stable/kube-state-metrics
+
+#prometheus installtaion
+helm install stable/prometheus
+helm install --name my-release stable/prometheus
+#grafana installtaion through helm 
+helm install --name my-release stable/grafana
+
+
+allow security group and change service my-release-grafana cluster to nodeport.
