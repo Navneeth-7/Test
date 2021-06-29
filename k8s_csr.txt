@@ -1,0 +1,34 @@
+#cat server.csr | base64 | tr -d '\n'
+#cat akshay_csr.yaml 
+apiVersion: certificates.k8s.io/v1
+kind: CertificateSigningRequest
+metadata:
+  name: akshay
+spec:
+  request: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURSBSRVFVRVNULS0tLS0KTUlJQ1ZqQ0NBVDRDQVFBd0VURVBNQTBHQTFVRUF3d0dZV3R6YUdGNU1JSUJJakFOQmdrcWhraUc5dzBCQVFFRgpBQU9DQVE4QU1JSUJDZ0tDQVFFQXh1TEpGU0pBb2VUbHovOExsOFBZa1Bhc2E3cEJYMGRXbXVwRTFwYm44STNHCmRtb3VIN2hMR0Erd3dlZjFycnlQV2FIN2tNUk9McHR2OXgxRlI0K293bXByaVFFMnJZMDh1bXdPYi8vRE5qSDAKR1hrOU9TUGNaUjJYaFozWnVIYzF2R1RPbjFzOUo1NE5QLzdTc3VId1J3dGJncFM3WnE1S1RsNG1ud3BuZjBYWApQNzhDekVEdkdYcE1qTXE1akFmbW05RmFXL2NuWkUrWGtsU3JyR3VUSmVsdGl0Z2NCOFdtVFZXdmI1bkN4UUgwCmlCa0s0MDBxcm02WVYvR0dsZjNoMkVNTHFjTHl1dHRJREwvbFFoTkY4bU1RUVdTb00vVTZ1MEEyd09RZ3UwaFYKR0VZM2lMN2RlL3JuU0ZIUFNyN01qVCtiZUxVcDdxcVhkZnl0WlJoRXB3SURBUUFCb0FBd0RRWUpLb1pJaHZjTgpBUUVMQlFBRGdnRUJBRUF4QkgxQ05GOXJFejIwNnFxbFRNai9EY3VBdFNzYStwanVUSThJZWQ5dEEyUE9QcHhBCkp4VE4yNmJKd1FCaGdwNTFSZzF1UFdJSEw5SzBaMjFRZDlJeGs1eWNJYm50RGdwVWNBRmpYR2N1UGpjREhuYy8KdjZWUk5DbEFQTjY2ZHlwQWVjazl6VmxHMjlHS2VjcUF3YVl0aWlJMUMyRERSenpHY1pGL1FDM2xRVEI5S3Vabgp2WFJONURZRVlid3ZDa3E5UFdGWkViTVB5Nk9UTWdOK0lFeVE3QVZHK0VXSnBqbVk5QVNLaG5Yb3pWSkNzWkcyCmdqKytHanJkNTAra2dqc2tqaU85a2NtNlQ1bnR2MEc5WlVKd2k3NFFwaUNHZ2xkMHVnbWhqS2dsenl1ZVBwUVYKSU9wWENUeThQNy9xNnVKU2RQeEZWSmFyZXgrN3NHRG1UVHM9Ci0tLS0tRU5EIENFUlRJRklDQVRFIFJFUVVFU1QtLS0tLQo=
+  signerName: kubernetes.io/kubelet-serving
+  usages:
+  - digital signature
+  - key encipherment
+  - server auth
+--------------------------------------
+kubectl apply -f akshay_csr.yaml
+
+kubectl get csr
+NAME        AGE   SIGNERNAME                                    REQUESTOR                  CONDITION
+akshay      3s    kubernetes.io/kubelet-serving                 kubernetes-admin           Pending
+
+kubectl certificate approve akshay
+kubectl get csr
+NAME        AGE     SIGNERNAME                                    REQUESTOR                  CONDITION
+akshay      4m34s   kubernetes.io/kubelet-serving                 kubernetes-admin           Approved
+
+
+kubectl certificate deny agent-smith
+certificatesigningrequest.certificates.k8s.io/agent-smith denied
+controlplane $ kubectl get csr
+NAME          AGE     SIGNERNAME                                    REQUESTOR                  CONDITION
+agent-smith   3m39s   kubernetes.io/kube-apiserver-client           agent-x                    Denied
+
+kubectl delete csr agent-smith 
+certificatesigningrequest.certificates.k8s.io "agent-smith" deleted
